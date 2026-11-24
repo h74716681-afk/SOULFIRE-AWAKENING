@@ -33,9 +33,32 @@ const floor=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshStanda
 const grid=new THREE.GridHelper(80,80,0x4a527b,0x252c45);grid.position.y=.012;scene.add(grid);
 for(let i=0;i<14;i++){const a=i*Math.PI*2/14;const pillar=new THREE.Mesh(new THREE.CylinderGeometry(.28,.42,3.8,8),new THREE.MeshStandardMaterial({color:0x252b42,metalness:.35,roughness:.6}));pillar.position.set(Math.cos(a)*10,1.9,Math.sin(a)*10);pillar.castShadow=true;scene.add(pillar);const ring=new THREE.Mesh(new THREE.TorusGeometry(.55,.045,8,24),new THREE.MeshBasicMaterial({color:0x7a8fff}));ring.rotation.x=Math.PI/2;ring.position.set(pillar.position.x,3.4,pillar.position.z);scene.add(ring)}
 const player=new THREE.Group();scene.add(player);
-const body=new THREE.Mesh(new THREE.CapsuleGeometry(.48,.95,5,10),new THREE.MeshStandardMaterial({color:0xd9e0f6,metalness:.25,roughness:.38}));body.position.y=1.15;body.castShadow=true;player.add(body);
+const armorMat=new THREE.MeshStandardMaterial({color:0x26304b,metalness:.62,roughness:.3});
+const lightArmor=new THREE.MeshStandardMaterial({color:0xd9e3f8,metalness:.38,roughness:.28});
+const skinMat=new THREE.MeshStandardMaterial({color:0xe7b99c,roughness:.72});
+const hairMat=new THREE.MeshStandardMaterial({color:0x101827,metalness:.18,roughness:.34});
+const glowMat=new THREE.MeshBasicMaterial({color:0xff714b});
+function warriorPart(geometry,material,x,y,z,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;player.add(m);return m}
+const body=warriorPart(new THREE.CapsuleGeometry(.37,.72,5,10),armorMat,0,1.38,0);
+warriorPart(new THREE.BoxGeometry(.72,.22,.48),lightArmor,0,1.58,-.025);
+warriorPart(new THREE.SphereGeometry(.13,16,12),glowMat,0,1.38,-.39);
+warriorPart(new THREE.SphereGeometry(.255,18,14),skinMat,0,2.12,-.015);
+warriorPart(new THREE.SphereGeometry(.28,16,12),hairMat,0,2.29,.025,.18,0,0);
+for(let i=0;i<5;i++){const x=(i-2)*.105;warriorPart(new THREE.ConeGeometry(.105,.34,5),hairMat,x,2.43,-.035,0,0,(i-2)*-.16)}
+warriorPart(new THREE.BoxGeometry(.3,.045,.035),hairMat,0,2.12,-.25);
+warriorPart(new THREE.SphereGeometry(.075,12,10),glowMat,0,1.88,-.22);
+warriorPart(new THREE.CapsuleGeometry(.13,.42,4,8),lightArmor,-.48,1.42,0,0,0,-.22);
+warriorPart(new THREE.CapsuleGeometry(.13,.42,4,8),lightArmor,.48,1.42,0,0,0,.22);
+warriorPart(new THREE.SphereGeometry(.2,12,10),armorMat,-.5,1.69,0);
+warriorPart(new THREE.SphereGeometry(.2,12,10),armorMat,.5,1.69,0);
+warriorPart(new THREE.CapsuleGeometry(.16,.48,4,8),armorMat,-.22,.62,0,0,0,.04);
+warriorPart(new THREE.CapsuleGeometry(.16,.48,4,8),armorMat,.22,.62,0,0,0,-.04);
+warriorPart(new THREE.BoxGeometry(.34,.18,.48),lightArmor,-.22,.25,-.04);
+warriorPart(new THREE.BoxGeometry(.34,.18,.48),lightArmor,.22,.25,-.04);
 const core=new THREE.Mesh(new THREE.SphereGeometry(.2,16,12),new THREE.MeshBasicMaterial({color:0xff714b}));core.position.set(0,1.3,-.43);player.add(core);
-const sword=new THREE.Mesh(new THREE.BoxGeometry(.12,1.35,.16),new THREE.MeshStandardMaterial({color:0xffa17a,emissive:0x9a2814,emissiveIntensity:1.4,metalness:.7,roughness:.2}));sword.position.set(.65,1.05,-.1);sword.rotation.z=-.35;player.add(sword);
+const swordGrip=warriorPart(new THREE.CylinderGeometry(.045,.045,.34,8),hairMat,.68,.93,-.1,0,0,-.35);
+const swordGuard=warriorPart(new THREE.BoxGeometry(.42,.075,.12),lightArmor,.65,1.08,-.1,0,0,-.35);
+const sword=new THREE.Mesh(new THREE.BoxGeometry(.12,1.35,.16),new THREE.MeshStandardMaterial({color:0xffa17a,emissive:0x9a2814,emissiveIntensity:1.4,metalness:.7,roughness:.2}));sword.position.set(.65,1.78,-.1);sword.rotation.z=-.35;sword.castShadow=true;player.add(sword);
 const slash=new THREE.Mesh(new THREE.TorusGeometry(1.05,.055,8,36,Math.PI*1.25),new THREE.MeshBasicMaterial({color:0xffa477,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));slash.position.set(0,1.15,-.78);slash.rotation.z=-.62;slash.visible=false;player.add(slash);
 const impactRing=new THREE.Mesh(new THREE.TorusGeometry(.72,.045,8,32),new THREE.MeshBasicMaterial({color:0xff527b,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));impactRing.rotation.x=Math.PI/2;impactRing.position.y=.08;scene.add(impactRing);let slashLife=0,impactLife=0;
 const dummy=new THREE.Group();dummy.position.set(0,0,-6);scene.add(dummy);const dm=new THREE.Mesh(new THREE.CapsuleGeometry(.55,.8,5,10),new THREE.MeshStandardMaterial({color:0x6f3450,emissive:0x2b081b}));dm.position.y=1;dummy.add(dm);const halo=new THREE.Mesh(new THREE.TorusGeometry(.8,.06,8,32),new THREE.MeshBasicMaterial({color:0xff5478}));halo.position.y=2.2;dummy.add(halo);
