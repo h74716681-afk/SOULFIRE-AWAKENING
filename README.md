@@ -29,3 +29,10 @@ An original anime-inspired supernatural action experience built around soul ener
 
 ## Current status
 Early foundation stage. This repository is the source of truth for the game's code and development notes. The first goal is a reliable, playable third-person prototype; larger features will be added incrementally.
+
+
+## Browser prototype (iPad/iPhone testing)
+A lightweight touch-controlled 3D browser prototype is available at `index.html`. It is a development preview to test the arena, movement, dodge, and attack loop on mobile Safari. It is separate from the Unity project foundation and is not a native iOS/Android app.
+
+### Publish the browser preview
+In GitHub, open **Settings → Pages**. Under **Build and deployment**, choose **Deploy from a branch**, select **main** and **/(root)**, then Save. After GitHub Pages finishes publishing, open the site URL shown on that Pages screen on your iPad or iPhone. GitHub Pages sites are public.
