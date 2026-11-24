@@ -40,7 +40,7 @@ try{
 try{
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x080b16);scene.fog=new THREE.Fog(0x080b16,18,55);
 const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,100);camera.position.set(0,5,8);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.domElement.style.zIndex='0';renderer.domElement.setAttribute('aria-label','SOULFIRE 3D game view');document.body.insertBefore(renderer.domElement,document.body.firstChild);
+const renderer=new THREE.WebGLRenderer({antialias:false,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.domElement.style.cssText='position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;background:#080b16;pointer-events:none';renderer.domElement.setAttribute('aria-label','SOULFIRE 3D game view');document.body.insertBefore(renderer.domElement,document.querySelector('#hud'));document.querySelector('#hud').style.zIndex='2';
 scene.add(new THREE.HemisphereLight(0x9eafff,0x17111f,2));
 const key=new THREE.DirectionalLight(0xffd4b3,3);key.position.set(-5,9,6);key.castShadow=true;scene.add(key);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshStandardMaterial({color:0x171b2a,roughness:.9}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
