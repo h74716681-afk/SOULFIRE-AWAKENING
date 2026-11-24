@@ -32,7 +32,7 @@ try{
   try{THREE=await import('https://unpkg.com/three@0.170.0/build/three.module.js')}
   catch(fallbackError){
     const errorPanel=document.createElement('div');
-    errorPanel.style.cssText='position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:28px;background:#080a12;color:#fff;text-align:center;font:16px system-ui';
+    errorPanel.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;display:grid;place-items:center;padding:28px;background:#080a12;color:#fff;text-align:center;font:16px system-ui';
     errorPanel.textContent='SOULFIRE could not load its 3D engine. Check your internet connection and reload the game.';
     document.body.appendChild(errorPanel);
     throw fallbackError;
@@ -103,7 +103,7 @@ animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;ca
 }catch(gameError){
   console.error('SOULFIRE game startup failed:',gameError);
   const errorPanel=document.createElement('div');
-  errorPanel.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:30;max-width:90vw;padding:16px 20px;border:1px solid #ff895f;border-radius:12px;background:#180f1b;color:#fff;text-align:center;font:13px system-ui;box-shadow:0 0 28px #000';
+  errorPanel.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:0;pointer-events:none;max-width:90vw;padding:16px 20px;border:1px solid #ff895f;border-radius:12px;background:#180f1b;color:#fff;text-align:center;font:13px system-ui;box-shadow:0 0 28px #000';
   errorPanel.textContent='3D GAME ERROR: '+(gameError&&gameError.message?gameError.message:'Unable to start the game')+'. Please reload the page.';
   document.body.appendChild(errorPanel);
 }
