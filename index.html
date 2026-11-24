@@ -97,7 +97,7 @@ if(enemyDead>0){enemyDead-=dt;dummy.scale.setScalar(Math.max(.001,enemyDead/2.2)
 const toward=new THREE.Vector3().subVectors(player.position,dummy.position);toward.y=0;const dist=toward.length();if(dist>1.65){toward.normalize();dummy.position.addScaledVector(toward,dt*2.05);dummy.rotation.y=Math.atan2(-toward.x,toward.z);enemyWindup=0}else{enemyCooldown-=dt;if(enemyWindup<=0&&enemyCooldown<=0){enemyWindup=.62;enemyCooldown=1.75;showToast('ENEMY ATTACK!')}}if(enemyWindup>0){enemyWindup-=dt;if(enemyWindup<=0&&dist<2.15){if(dodge<=0&&!guarding){playerHp=Math.max(0,playerHp-(wave===5?32:18+(wave-1)*4));playSfx("hit");updateBars();showToast('SOUL CORE HIT');if(playerHp<=0){playerDead=1.8;showToast('YOU WERE DEFEATED')}}else{showToast(guarding?'GUARD SUCCESS':'DODGE SUCCESS');playSfx("guard")}}}}
 if(playerDead>0){playerDead-=dt;if(playerDead<=0){playerHp=100+vitalityLevel*10;player.position.set(0,0,0);player.position.y=0;jumpVelocity=0;onGround=true;updateBars();showToast('SOUL REAWAKENED')}}
 if(hitFlash>0){hitFlash-=dt;dm.scale.setScalar(1+Math.sin(hitFlash*55)*.12)}else if(enemyDead<=0)dm.material.emissive.setHex(0x2b081b);
-const desired=new THREE.Vector3(player.position.x,player.position.y+4.4,player.position.z+7.5);camera.position.lerp(desired,1-Math.exp(-5*dt));camera.lookAt(player.position.x,1.1,player.position.z-1.4);renderer.render(scene,camera)}
+const desired=new THREE.Vector3(player.position.x,player.position.y+4.4,player.position.z+7.5);camera.position.lerp(desired,1-Math.exp(-5*dt));camera.lookAt(player.position.x,1.1,player.position.z-1.4);renderer.render(scene,camera);window.__soulfire3dReady=true}
 animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6))});
 }catch(gameError){
   console.error('SOULFIRE game startup failed:',gameError);
@@ -106,5 +106,28 @@ animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;ca
   errorPanel.textContent='3D GAME ERROR: '+(gameError&&gameError.message?gameError.message:'Unable to start the game')+'. Please reload the page.';
   document.body.appendChild(errorPanel);
 }
+</script>
+<script>
+(()=>{
+ let fallbackStarted=false;
+ setTimeout(()=>{
+  if(window.__soulfire3dReady||fallbackStarted)return;
+  fallbackStarted=true;
+  const canvas=document.createElement('canvas');canvas.id='soulfireFallback';
+  canvas.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;background:#080b16';
+  document.body.insertBefore(canvas,document.querySelector('#hud'));
+  const ctx=canvas.getContext('2d');
+  const start=document.createElement('button');start.textContent='START GAME';
+  start.style.cssText='position:fixed;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);padding:17px 30px;border:1px solid #ffad83;border-radius:14px;background:linear-gradient(135deg,#a63f35,#54224c);color:white;font:900 16px system-ui;letter-spacing:2px;box-shadow:0 0 35px #ff754b88';
+  document.body.appendChild(start);
+  let frame=0,playerX=0,enemyX=0,flash=0;
+  function resize(){const d=Math.min(devicePixelRatio||1,2);canvas.width=innerWidth*d;canvas.height=innerHeight*d;ctx.setTransform(d,0,0,d,0,0)}
+  resize();addEventListener('resize',resize);
+  function fighter(x,y,enemy){ctx.save();ctx.translate(x,y);ctx.shadowBlur=18;ctx.shadowColor=enemy?'#ff4d91':'#ff784f';ctx.fillStyle=enemy?'#642b54':'#293956';ctx.strokeStyle=enemy?'#ff80b4':'#ffb18c';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,-58,17,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=enemy?'#24152f':'#172236';ctx.fillRect(-19,-40,38,49);ctx.strokeStyle=enemy?'#ff7ab2':'#dce7ff';ctx.lineWidth=9;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-13,-28);ctx.lineTo(-28,-3);ctx.moveTo(13,-28);ctx.lineTo(28,-3);ctx.moveTo(-9,8);ctx.lineTo(-15,39);ctx.moveTo(9,8);ctx.lineTo(15,39);ctx.stroke();if(!enemy){ctx.strokeStyle='#ffb078';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(25,-17);ctx.lineTo(48,-83);ctx.stroke()}else{ctx.fillStyle='#ff6ca6';ctx.beginPath();ctx.arc(-7,-60,3,0,7);ctx.arc(7,-60,3,0,7);ctx.fill()}ctx.restore()}
+  function draw(){const w=innerWidth,h=innerHeight;ctx.clearRect(0,0,w,h);const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#10182b');g.addColorStop(1,'#080a12');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.strokeStyle='#343d62';ctx.globalAlpha=.65;for(let i=-10;i<=10;i++){ctx.beginPath();ctx.moveTo(w/2+i*45,h*.48);ctx.lineTo(w/2+i*110,h);ctx.stroke()}for(let i=0;i<9;i++){const y=h*.5+i*i*5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}ctx.globalAlpha=1;for(let i=0;i<10;i++){const x=w*(.08+i*.094);ctx.fillStyle='#252d48';ctx.fillRect(x,h*.36,12,h*.2);ctx.strokeStyle='#7a8fff';ctx.strokeRect(x-4,h*.36-4,20,h*.2+8)}ctx.fillStyle='#ff9b72';ctx.font='900 12px system-ui';ctx.textAlign='center';ctx.fillText('SOULFIRE BATTLE ARENA',w/2,h*.24);const base=h*.72;fighter(w*.37+playerX,base,false);fighter(w*.66+enemyX,base,true);ctx.fillStyle='#ff8b6c';ctx.font='bold 11px system-ui';ctx.fillText('AWAKENED WARRIOR',w*.37+playerX,base+58);ctx.fillStyle='#d78bff';ctx.fillText('HOLLOW SOLDIER',w*.66+enemyX,base+58);if(flash>0){ctx.strokeStyle='#ffb17b';ctx.lineWidth=5;ctx.shadowBlur=24;ctx.shadowColor='#ff6d4c';ctx.beginPath();ctx.arc(w*.52,base-38,45+Math.sin(frame)*12,0,Math.PI*2);ctx.stroke();flash--}frame++;requestAnimationFrame(draw)}
+  draw();
+  start.addEventListener('click',()=>{start.remove();document.querySelector('#hint').textContent='FALLBACK ARENA ACTIVE · ATTACK';document.querySelector('#attack').addEventListener('pointerdown',()=>{flash=12;enemyX=enemyX===0?12:0;document.querySelector('#toast').textContent='SOUL STRIKE';document.querySelector('#toast').style.opacity=1;setTimeout(()=>document.querySelector('#toast').style.opacity=0,500)})});
+ },8000);
+})();
 </script>
 </body></html>
