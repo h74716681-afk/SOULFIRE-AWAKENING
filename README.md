@@ -34,5 +34,15 @@ Early foundation stage. This repository is the source of truth for the game's co
 ## Browser prototype (iPad/iPhone testing)
 A lightweight touch-controlled 3D browser prototype is available at `index.html`. It is a development preview to test the arena, movement, dodge, and attack loop on mobile Safari. It is separate from the Unity project foundation and is not a native iOS/Android app.
 
+### Browser prototype systems (current preview)
+- Five-wave survival run: Hollow Soldier, Soul Hunter, Ember Revenant, Void Executioner, and the Abyssal Guardian final boss.
+- Soul Forge with persistent blade-damage and vitality upgrades purchased using Soul Shards.
+- Browser-generated combat sound effects and optional speech-synthesis voice announcements. These are temporary implementation sounds, not the final audio production.
+
+### Audio production roadmap
+- Keep dedicated voice effects and character voice acting in the production plan.
+- Replace temporary browser speech with authored, recorded, mixed, and licensed voice assets for character dialogue, enemy callouts, boss introductions, combat barks, and story scenes.
+- Produce a polished sound library for sword swings, hit impacts, blocks, dodges, abilities, UI, ambience, and boss music.
+
 ### Publish the browser preview
 In GitHub, open **Settings → Pages**. Under **Build and deployment**, choose **Deploy from a branch**, select **main** and **/(root)**, then Save. After GitHub Pages finishes publishing, open the site URL shown on that Pages screen on your iPad or iPhone. GitHub Pages sites are public.
