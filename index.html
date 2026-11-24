@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#090b14">
+<title>SOULFIRE: AWAKENING — Prototype</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080a12;touch-action:none}canvas{display:block;width:100%;height:100%}
+#hud{position:fixed;inset:0;pointer-events:none;color:#f5f7ff}.top{position:absolute;top:max(14px,env(safe-area-inset-top));left:16px;right:16px;display:flex;justify-content:space-between;align-items:flex-start}.brand{font-weight:900;letter-spacing:.16em;font-size:13px;text-shadow:0 2px 12px #000}.sub{font-size:10px;color:#aeb6d1;letter-spacing:.18em;margin-top:4px}.status{font-size:11px;color:#b9c4e6;text-align:right}.health{width:145px;height:7px;background:#303348;border-radius:9px;margin-top:7px;overflow:hidden}.health i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#ff3d62,#ff9b62)}
+#hint{position:absolute;top:76px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.12em;color:#c4cbe0;background:#101525b8;padding:8px 12px;border:1px solid #ffffff18;border-radius:20px;white-space:nowrap}
+.controls{position:absolute;left:0;right:0;bottom:max(22px,env(safe-area-inset-bottom));display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px}.stick{width:116px;height:116px;border:1px solid #b6c7ff70;border-radius:50%;background:#11182b99;position:relative;pointer-events:auto;touch-action:none;backdrop-filter:blur(8px)}.nub{position:absolute;width:48px;height:48px;border-radius:50%;left:33px;top:33px;background:#a9bbff55;border:1px solid #d8e1ffbb;box-shadow:0 0 20px #809dff55}
+.actions{display:flex;gap:12px;align-items:flex-end;pointer-events:auto}.action{border:1px solid #b8c9ff88;background:#141c31d9;color:#fff;border-radius:50%;width:66px;height:66px;font-weight:800;font-size:11px;letter-spacing:.08em;touch-action:none;box-shadow:0 0 22px #607cff22}.action.big{width:78px;height:78px;border-color:#ff875c;background:#4a1e27dd;box-shadow:0 0 25px #ff563944}.action:active{transform:scale(.94);background:#34436a}
+#toast{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-weight:900;letter-spacing:.2em;font-size:22px;color:#ffb08b;text-shadow:0 0 22px #ff572e;opacity:0;transition:opacity .15s;white-space:nowrap}
+@media(min-width:800px){.controls{padding:0 6vw}.stick{width:130px;height:130px}.nub{left:40px;top:40px}}
+</style>
+</head>
+<body>
+<div id="hud">
+ <div class="top"><div><div class="brand">SOULFIRE <span style="color:#ff895f">: AWAKENING</span></div><div class="sub">MOBILE COMBAT PROTOTYPE</div></div><div class="status">SOUL CORE<br><div class="health"><i id="hp"></i></div></div></div>
+ <div id="hint">MOVE WITH LEFT STICK · TAP ATTACK TO STRIKE</div>
+ <div id="toast">SOUL STRIKE</div>
+ <div class="controls"><div class="stick" id="stick"><div class="nub" id="nub"></div></div><div class="actions"><button class="action" id="dodge">DODGE</button><button class="action big" id="attack">ATTACK</button></div></div>
+</div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x080b16);scene.fog=new THREE.Fog(0x080b16,18,55);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,100);camera.position.set(0,5,8);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0x9eafff,0x17111f,2));
+const key=new THREE.DirectionalLight(0xffd4b3,3);key.position.set(-5,9,6);key.castShadow=true;scene.add(key);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshStandardMaterial({color:0x171b2a,roughness:.9}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+const grid=new THREE.GridHelper(80,80,0x4a527b,0x252c45);grid.position.y=.012;scene.add(grid);
+for(let i=0;i<14;i++){const a=i*Math.PI*2/14;const pillar=new THREE.Mesh(new THREE.CylinderGeometry(.28,.42,3.8,8),new THREE.MeshStandardMaterial({color:0x252b42,metalness:.35,roughness:.6}));pillar.position.set(Math.cos(a)*10,1.9,Math.sin(a)*10);pillar.castShadow=true;scene.add(pillar);const ring=new THREE.Mesh(new THREE.TorusGeometry(.55,.045,8,24),new THREE.MeshBasicMaterial({color:0x7a8fff}));ring.rotation.x=Math.PI/2;ring.position.set(pillar.position.x,3.4,pillar.position.z);scene.add(ring)}
+const player=new THREE.Group();scene.add(player);
+const body=new THREE.Mesh(new THREE.CapsuleGeometry(.48,.95,5,10),new THREE.MeshStandardMaterial({color:0xd9e0f6,metalness:.25,roughness:.38}));body.position.y=1.15;body.castShadow=true;player.add(body);
+const core=new THREE.Mesh(new THREE.SphereGeometry(.2,16,12),new THREE.MeshBasicMaterial({color:0xff714b}));core.position.set(0,1.3,-.43);player.add(core);
+const sword=new THREE.Mesh(new THREE.BoxGeometry(.12,1.35,.16),new THREE.MeshStandardMaterial({color:0xffa17a,emissive:0x9a2814,emissiveIntensity:1.4,metalness:.7,roughness:.2}));sword.position.set(.65,1.05,-.1);sword.rotation.z=-.35;player.add(sword);
+const dummy=new THREE.Group();dummy.position.set(0,0,-6);scene.add(dummy);const dm=new THREE.Mesh(new THREE.CapsuleGeometry(.55,.8,5,10),new THREE.MeshStandardMaterial({color:0x6f3450,emissive:0x2b081b}));dm.position.y=1;dummy.add(dm);const halo=new THREE.Mesh(new THREE.TorusGeometry(.8,.06,8,32),new THREE.MeshBasicMaterial({color:0xff5478}));halo.position.y=2.2;dummy.add(halo);
+let moveX=0,moveY=0,dodge=0,attack=0,hp=100,hitFlash=0;const stick=document.querySelector('#stick'),nub=document.querySelector('#nub');let activePointer=null;
+function setStick(e){const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=42,len=Math.hypot(dx,dy)||1,k=Math.min(1,max/len);moveX=dx/Math.max(r.width/2,1);moveY=-dy/Math.max(r.height/2,1);const x=dx*k,y=dy*k;nub.style.transform='translate('+x+'px,'+y+'px)'}
+stick.addEventListener('pointerdown',e=>{activePointer=e.pointerId;stick.setPointerCapture(e.pointerId);setStick(e)});stick.addEventListener('pointermove',e=>{if(e.pointerId===activePointer)setStick(e)});function release(e){if(e.pointerId!==activePointer)return;activePointer=null;moveX=moveY=0;nub.style.transform='translate(0,0)'}stick.addEventListener('pointerup',release);stick.addEventListener('pointercancel',release);
+document.querySelector('#dodge').addEventListener('pointerdown',e=>{e.preventDefault();dodge=.28});
+const toast=document.querySelector('#toast');document.querySelector('#attack').addEventListener('pointerdown',e=>{e.preventDefault();attack=.32;toast.style.opacity=1;setTimeout(()=>toast.style.opacity=0,260);if(player.position.distanceTo(dummy.position)<3.2){hp=Math.max(0,hp-12);document.querySelector('#hp').style.width=hp+'%';hitFlash=.22;if(hp===0){hp=100;document.querySelector('#hp').style.width='100%';dm.material.color.setHex(0x6f3450)}}});
+const clock=new THREE.Clock();let yaw=0;
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);const input=new THREE.Vector3(moveX,0,-moveY);if(input.length()>1)input.normalize();if(input.lengthSq()>.01){yaw=Math.atan2(input.x,-input.z);player.rotation.y=THREE.MathUtils.lerp(player.rotation.y,yaw,1-Math.exp(-12*dt));player.position.addScaledVector(input,dt*(dodge>0?10:4.4))}
+if(dodge>0){dodge-=dt;player.position.addScaledVector(new THREE.Vector3(Math.sin(yaw),0,-Math.cos(yaw)),dt*5)}
+if(attack>0){attack-=dt;sword.rotation.x=Math.sin((.32-attack)/.32*Math.PI)*-1.7}else sword.rotation.x=0;
+if(hitFlash>0){hitFlash-=dt;dm.scale.setScalar(1+Math.sin(hitFlash*55)*.12)}
+const desired=new THREE.Vector3(player.position.x,player.position.y+4.4,player.position.z+7.5);camera.position.lerp(desired,1-Math.exp(-5*dt));camera.lookAt(player.position.x,1.1,player.position.z-1.4);dummy.rotation.y+=dt*.3;renderer.render(scene,camera)}
+animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6))});
+</script>
+</body></html>
