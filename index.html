@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#090b14">
 <title>SOULFIRE: AWAKENING — Prototype</title>
 <style>
-:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080a12;touch-action:none}canvas{display:block;width:100%;height:100%}
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080a12;touch-action:none}canvas{display:block;position:fixed;inset:0;width:100%;height:100%;z-index:0}#hud{z-index:2}
 #hud{position:fixed;inset:0;pointer-events:none;color:#f5f7ff}.top{position:absolute;top:max(14px,env(safe-area-inset-top));left:16px;right:16px;display:flex;justify-content:space-between;align-items:flex-start}.brand{font-weight:900;letter-spacing:.16em;font-size:13px;text-shadow:0 2px 12px #000}.sub{font-size:10px;color:#aeb6d1;letter-spacing:.18em;margin-top:4px}.status{font-size:11px;color:#b9c4e6;text-align:right}#waveLabel{display:inline-block;padding:5px 9px;border:1px solid #ff9b6b88;border-radius:8px;background:#351c25dd;letter-spacing:.12em;font-size:12px;text-shadow:0 0 10px #ff754b}.health{width:145px;height:7px;background:#303348;border-radius:9px;margin-top:7px;overflow:hidden}.health i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#ff3d62,#ff9b62)}.progress{height:5px;width:110px;background:#303348;border-radius:9px;overflow:hidden;margin-top:4px}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#49d6c7,#b6fff0)}.meta{font-size:10px;color:#d8e5ff;margin-top:7px;letter-spacing:.08em}
 #hint{position:absolute;top:76px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.12em;color:#c4cbe0;background:#101525b8;padding:8px 12px;border:1px solid #ffffff18;border-radius:20px;white-space:nowrap}.utility{position:absolute;top:116px;left:16px;display:flex;gap:7px;pointer-events:auto}.utility button{border:1px solid #8296c9;background:#10182ddd;color:#eaf0ff;border-radius:9px;padding:7px 10px;font-size:10px;font-weight:800;letter-spacing:.08em}.forgePanel{position:absolute;top:154px;left:16px;width:min(270px,calc(100vw - 32px));padding:13px;border:1px solid #b88cff88;border-radius:14px;background:#101326f5;pointer-events:auto;box-shadow:0 0 28px #0009}.forgePanel button{display:block;width:100%;margin-top:8px;padding:10px;border:1px solid #9a83c9;border-radius:9px;background:#282044;color:#fff;font-weight:800;font-size:11px}
 .controls{position:absolute;left:0;right:0;bottom:max(22px,env(safe-area-inset-bottom));display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px}.stick{width:116px;height:116px;border:1px solid #b6c7ff70;border-radius:50%;background:#11182b99;position:relative;pointer-events:auto;touch-action:none;backdrop-filter:blur(8px)}.nub{position:absolute;width:48px;height:48px;border-radius:50%;left:33px;top:33px;background:#a9bbff55;border:1px solid #d8e1ffbb;box-shadow:0 0 20px #809dff55}
@@ -24,10 +24,23 @@
  <div class="controls"><div class="stick" id="stick"><div class="nub" id="nub"></div></div><div class="actions"><button class="action jump" id="jump">JUMP</button><button class="action guard" id="guard">GUARD</button><button class="action ultimate" id="ultimate" disabled>SOUL<br>BURST</button><button class="action" id="dodge">DODGE</button><button class="action big" id="attack">ATTACK</button></div></div>
 </div>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+let THREE;
+try{
+  THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
+}catch(primaryError){
+  try{THREE=await import('https://unpkg.com/three@0.170.0/build/three.module.js')}
+  catch(fallbackError){
+    const errorPanel=document.createElement('div');
+    errorPanel.style.cssText='position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:28px;background:#080a12;color:#fff;text-align:center;font:16px system-ui';
+    errorPanel.textContent='SOULFIRE could not load its 3D engine. Check your internet connection and reload the game.';
+    document.body.appendChild(errorPanel);
+    throw fallbackError;
+  }
+}
+try{
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x080b16);scene.fog=new THREE.Fog(0x080b16,18,55);
 const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,100);camera.position.set(0,5,8);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(renderer.domElement);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.domElement.style.zIndex='0';renderer.domElement.setAttribute('aria-label','SOULFIRE 3D game view');document.body.insertBefore(renderer.domElement,document.body.firstChild);
 scene.add(new THREE.HemisphereLight(0x9eafff,0x17111f,2));
 const key=new THREE.DirectionalLight(0xffd4b3,3);key.position.set(-5,9,6);key.castShadow=true;scene.add(key);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshStandardMaterial({color:0x171b2a,roughness:.9}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
@@ -86,5 +99,12 @@ if(playerDead>0){playerDead-=dt;if(playerDead<=0){playerHp=100+vitalityLevel*10;
 if(hitFlash>0){hitFlash-=dt;dm.scale.setScalar(1+Math.sin(hitFlash*55)*.12)}else if(enemyDead<=0)dm.material.emissive.setHex(0x2b081b);
 const desired=new THREE.Vector3(player.position.x,player.position.y+4.4,player.position.z+7.5);camera.position.lerp(desired,1-Math.exp(-5*dt));camera.lookAt(player.position.x,1.1,player.position.z-1.4);renderer.render(scene,camera)}
 animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6))});
+}catch(gameError){
+  console.error('SOULFIRE game startup failed:',gameError);
+  const errorPanel=document.createElement('div');
+  errorPanel.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:30;max-width:90vw;padding:16px 20px;border:1px solid #ff895f;border-radius:12px;background:#180f1b;color:#fff;text-align:center;font:13px system-ui;box-shadow:0 0 28px #000';
+  errorPanel.textContent='3D GAME ERROR: '+(gameError&&gameError.message?gameError.message:'Unable to start the game')+'. Please reload the page.';
+  document.body.appendChild(errorPanel);
+}
 </script>
 </body></html>
